@@ -220,7 +220,7 @@ def menu(message):
                      'Напишите мне размер шины в формате XXX/XX/XX (например: 255/55/17), и я подберу для вас размер диска',
                      reply_markup=types.ReplyKeyboardRemove())
     else:
-        bot.reply_to(message,'Сначала выберите функцию c помощью кнопки ниже')
+        bot.reply_to(message,'Сначала выберите функцию c помощью кнопки ниже. \n\nЕсли кнопки не отображаются, нажмите /start')
 
 
 @bot.message_handler(content_types=['text'])
