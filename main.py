@@ -173,15 +173,13 @@ def tyre_search(tyre, i, seas):
 def start(m, res=False):
     """Начало, создаем кнопки, делаем разметку клавиатуры"""
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Внешний диаметр")
-    item2 = types.KeyboardButton("Сравнение размеров шин")
-    item3 = types.KeyboardButton("Перевод из дюймового размера")
-    item4 = types.KeyboardButton("Подбор дисков")
-    item5 = types.KeyboardButton("Поиск шин в магазине")
-    markup.add(item1)
-    markup.add(item2)
-    markup.add(item3)
-    markup.add(item4)
+    item1 = types.KeyboardButton("📏 Посчитать диаметр")
+    item2 = types.KeyboardButton("↔️ Сравнить размеры")
+    item3 = types.KeyboardButton("🇺🇸 Перевести из дюймов")
+    item4 = types.KeyboardButton("🛞 Подобрать диски")
+    item5 = types.KeyboardButton("🛒 Найти шины в магазине")
+    markup.add(item1, item2)
+    markup.add(item3, item4)
     markup.add(item5)
     bot.send_message(m.chat.id,
                      'Привет! Это шинный калькулятор! \nЧто вы хотите узнать?', reply_markup=markup)
@@ -193,30 +191,30 @@ def menu(message):
     Основное меню.
     Читаем ответ с кнопок, просим ввести данные.
     """
-    if message.text.strip() == 'Внешний диаметр':
+    if message.text.strip() == '📏 Посчитать диаметр':
         bot.reply_to(message, 'Напишите мне размер вашего колеса в формате XXX/XX/XX (например: 255/55/17)', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_external_diameter)
-    elif message.text.strip() == 'Сравнение размеров шин':
+    elif message.text.strip() == '↔️ Сравнить размеры':
         bot.reply_to(message,'Напишите мне размер колес, которые у вас сейчас в формате XXX/XX/XX (например: 255/55/17)', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_compare_step1)
-    elif message.text.strip() == 'Перевод из дюймового размера':
+    elif message.text.strip() == '🇺🇸 Перевести из дюймов':
         bot.reply_to(message,'Напишите мне размер дюймового колеса в формате XX/XX/XX (например: 33/12.5/15)', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_inch)
-    elif message.text.strip() == 'Поиск шин в магазине':
+    elif message.text.strip() == '🛒 Найти шины в магазине':
         #Создаем новую одноразовую клавиатуру для выбора сезона шин
         bot.register_next_step_handler(message, message_input_season)
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-        summer = types.KeyboardButton("Лето")
-        winter = types.KeyboardButton("Зима")
-        ms = types.KeyboardButton("Всесезонка")
-        back = types.KeyboardButton("<< Назад")
+        summer = types.KeyboardButton("☀️ Лето")
+        winter = types.KeyboardButton("❄️ Зима")
+        ms = types.KeyboardButton("🌦 Всесезонка")
+        back = types.KeyboardButton("⬅️ Назад")
         markup.add(summer)
         markup.add(winter)
         markup.add(ms)
         markup.add(back)
         #Ответ
         bot.reply_to(message, 'Сейчас я попытаюсь найти необходимые шины в магазине Мосавтошина. \n\nВыберите сезон', reply_markup=markup)
-    elif message.text.strip() == 'Подбор дисков':
+    elif message.text.strip() == '🛞 Подобрать диски':
         bot.register_next_step_handler(message, message_input_disk)
         bot.reply_to(message,
                      'Напишите мне размер шины в формате XXX/XX/XX (например: 255/55/17), и я подберу для вас размер диска',
@@ -231,7 +229,7 @@ def message_input_external_diameter(message):
     global text
     text = message.text
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    back = types.KeyboardButton("<< Назад")
+    back = types.KeyboardButton("⬅️ Назад")
     markup.add(back)
     if (height_calc(message.text)) != False:
         bot.reply_to(message, f"Внешний диаметр вашего колеса: " + str(height_calc(message.text)) + "мм" + "\nВ дюймах: " + str(height_calc_inch(message.text)) + '"', reply_markup = markup)
@@ -247,7 +245,7 @@ def message_input_inch(message):
     global inch
     inch = message.text
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    back = types.KeyboardButton("<< Назад")
+    back = types.KeyboardButton("⬅️ Назад")
     markup.add(back)
     if (info_check_inch(inch)) != False:
         bot.reply_to(message, f"Ваше колесо примерно соответствует европейскому размеру " + str(amer_calc(inch)), reply_markup = markup)
@@ -263,25 +261,25 @@ def message_input_season(message):
     global season
     global seas
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    back = types.KeyboardButton("<< Назад")
+    back = types.KeyboardButton("⬅️ Назад")
     markup.add(back)
     season = message.text
     #Получаем ответ с названием сезона, создаем переменную seas, куда запишем индекс сезона для подстановки в URL
-    if message.text.strip() == 'Лето':
+    if message.text.strip() == '☀️ Лето':
         seas = 1
         bot.reply_to(message,
                      'Напишите мне нужный размер в формате XXX/XX/XX (например: 255/55/17)\n\nПока я могу выводить только 10 позиций.', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_search)
-    elif message.text.strip() == 'Зима':
+    elif message.text.strip() == '❄️ Зима':
         seas = 2
         bot.reply_to(message,'Напишите мне нужный размер в формате XXX/XX/XX (например: 255/55/17)\n\nПока я могу выводить только 10 позиций.', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_search)
-    elif message.text.strip() == 'Всесезонка':
+    elif message.text.strip() == '🌦 Всесезонка':
         seas = 3
         bot.reply_to(message,
                      'Напишите мне нужный размер в формате XXX/XX/XX (например: 255/55/17)\n\nПока я могу выводить только 10 позиций.', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_search)
-    elif message.text.strip() == '<< Назад':
+    elif message.text.strip() == '⬅️ Назад':
         start2(message)
     else:
         bot.reply_to(message, "Ошибка!", reply_markup = markup)
@@ -294,7 +292,7 @@ def message_input_search(message):
     global size
     size = message.text
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    back = types.KeyboardButton("<< Назад")
+    back = types.KeyboardButton("⬅️ Назад")
     markup.add(back)
 
     if (info_check(size)) != False:
@@ -318,15 +316,13 @@ def message_input_search(message):
 def start2(message):
     """Главное меню, чтобы снова не выводить приветствие"""
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Внешний диаметр")
-    item2 = types.KeyboardButton("Сравнение размеров шин")
-    item3 = types.KeyboardButton("Перевод из дюймового размера")
-    item4 = types.KeyboardButton("Подбор дисков")
-    item5 = types.KeyboardButton("Поиск шин в магазине")
-    markup.add(item1)
-    markup.add(item2)
-    markup.add(item3)
-    markup.add(item4)
+    item1 = types.KeyboardButton("📏 Посчитать диаметр")
+    item2 = types.KeyboardButton("↔️ Сравнить размеры")
+    item3 = types.KeyboardButton("🇺🇸 Перевести из дюймов")
+    item4 = types.KeyboardButton("🛞 Подобрать диски")
+    item5 = types.KeyboardButton("🛒 Найти шины в магазине")
+    markup.add(item1, item2)
+    markup.add(item3, item4)
     markup.add(item5)
     #Ответ
     bot.send_message(message.chat.id,
@@ -339,7 +335,7 @@ def message_input_disk(message):
     global tyre
     tyre = message.text
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    back = types.KeyboardButton("<< Назад")
+    back = types.KeyboardButton("⬅️ Назад")
     markup.add(back)
     if info_check(tyre) == True:
         if disk_size(tyre) != "error":
@@ -359,7 +355,7 @@ def message_input_compare_step1(message):
     global old_item
     old_item = message.text
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    back = types.KeyboardButton("<< Назад")
+    back = types.KeyboardButton("⬅️ Назад")
     markup.add(back)
     if info_check(old_item) == True:
         bot.reply_to(message,'Напишите мне размер колес, с которыми вы хотите сравнить в формате XXX/XX/XX (например: 255/55/17)')  # Bot reply 'Введите текст'
@@ -375,7 +371,7 @@ def message_input_compare_step2(message):
     global new_item
     new_item = message.text
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    back = types.KeyboardButton("<< Назад")
+    back = types.KeyboardButton("⬅️ Назад")
     markup.add(back)
     if compare(old_item, new_item) != "error":
         if compare(old_item, new_item) > 0: #Если новый размер оказался больше старого
