@@ -394,4 +394,5 @@ def message_input_compare_step2(message):
         bot.reply_to(message, error_mes, reply_markup = markup)
         bot.register_next_step_handler(message, start2)
 
+
 bot.polling(none_stop=True) #Постоянно принимаем сообщения
