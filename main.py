@@ -111,9 +111,9 @@ def amer_calc(tyre):
         height = int(tyre[0])
         width = float(tyre[1])
         raduis = int(tyre[2])
-        new_height = width * 25.4
-        new_width = (height * 25.4 - raduis * 25.4) / 2 / (width * 25.4) * 100
-        return "".join([euro_select(new_height),"/", str(round(new_width/5.0)*5), "R", str(raduis)])
+        new_width = width * 25.4
+        new_height = (height * 25.4 - raduis * 25.4) / 2 / (width * 25.4) * 100
+        return "".join([euro_select(new_width),"/", str(round(new_height/5.0)*5), "R", str(raduis)])
     else:
         return "error"
 
@@ -393,6 +393,5 @@ def message_input_compare_step2(message):
     else:
         bot.reply_to(message, error_mes, reply_markup = markup)
         bot.register_next_step_handler(message, start2)
-
 
 bot.polling(none_stop=True) #Постоянно принимаем сообщения
