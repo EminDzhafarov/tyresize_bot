@@ -12,13 +12,15 @@ bot = telebot.TeleBot(API_TOKEN)
 bot.set_webhook()
 #Подключаем таблицу размеров дисков
 disks = pd.read_csv('disk_size.csv', delimiter=";",
-                        names=['Размер шины', 'Минимальная', 'Рекомендуемая', 'Максимальная'])
+ names=['Размер шины', 'Минимальная', 'Рекомендуемая', 'Максимальная'])
 
 
 #Ошибка для европейских размеров
-error_mes = "Ошибка! Возможно, вы ввели данные в неправильном формате или они не являются европейским размером шин. \n\nВновь выберите функцию и попробуйте еще раз."
+error_mes = "Ошибка! Возможно, вы ввели данные в неправильном формате или они не являются европейским размером шин. " \
+            "\n\nВновь выберите функцию и попробуйте еще раз."
 #Ошибка для дюймовых размеров
-error_inch = "Ошибка! Возможно, вы ввели данные в неправильном формате или они не являются дюймовым размером шин. \n\nВновь выберите функцию и попробуйте еще раз."
+error_inch = "Ошибка! Возможно, вы ввели данные в неправильном формате или они не являются дюймовым размером шин. " \
+             "\n\nВновь выберите функцию и попробуйте еще раз."
 
 
 def info_check(tyre):
@@ -133,8 +135,7 @@ def disk_size(tyre):
         except IndexError:
             return "error"
     else:
-        bot.reply_to(message, error_mes, reply_markup=markup)
-        bot.register_next_step_handler(message, start2)
+        return "error"
 
 
 def tyre_search(tyre, i, seas):
@@ -145,7 +146,7 @@ def tyre_search(tyre, i, seas):
     if info_check(tyre) == True:
         tyre = re.split("/|R|r| ", tyre) #Проверяем данные
         #Парсим страницу Мосавтошины, создаем URL нужного раздела, подставляя нужный размер и индекс сезона
-        URL_TEMPLATE = "https://mosautoshina.ru/catalog/tyre/search/by-size/-"+"-".join(tyre)+"-" + str(seas)+"---/"
+        URL_TEMPLATE = f'https://mosautoshina.ru/catalog/tyre/search/by-size/-{"-".join(tyre)}-{seas}---/'
         r = requests.get(URL_TEMPLATE)
         soup = bs(r.text, "html.parser")
 
@@ -160,8 +161,7 @@ def tyre_search(tyre, i, seas):
             tyre_price = [("".join((price.text).split()).rstrip("₽")) for price in tyres_prices]
             tyre_link = [("https://mosautoshina.ru" + link.get('href')) for link in tyres_links]
             #Создаем готовую карточку товара
-            item_card = "🛞" + tyre_name[i] + "\n" + "💰Цена за колесо: " + tyre_price[i] + "₽" + "\n"\
-                        + "🛒" + tyre_link[i]
+            item_card = f'🛞{tyre_name[i]}\n💰Цена за колесо: {tyre_price[i]}₽\n🛒{tyre_link[i]}'
             return item_card
         else:
             return False
@@ -192,13 +192,16 @@ def menu(message):
     Читаем ответ с кнопок, просим ввести данные.
     """
     if message.text.strip() == '📏 Посчитать диаметр':
-        bot.reply_to(message, 'Напишите мне размер вашего колеса в формате XXX/XX/XX (например: 255/55/17)', reply_markup=types.ReplyKeyboardRemove())
+        bot.reply_to(message, 'Напишите мне размер вашего колеса в формате XXX/XX/XX (например: 255/55/17)'\
+                     , reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_external_diameter)
     elif message.text.strip() == '↔️ Сравнить размеры':
-        bot.reply_to(message,'Напишите мне размер колес, которые у вас сейчас в формате XXX/XX/XX (например: 255/55/17)', reply_markup=types.ReplyKeyboardRemove())
+        bot.reply_to(message,'Напишите мне размер колес, которые у вас сейчас в формате XXX/XX/XX '
+                             '(например: 255/55/17)', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_compare_step1)
     elif message.text.strip() == '🇺🇸 Перевести из дюймов':
-        bot.reply_to(message,'Напишите мне размер дюймового колеса в формате XX/XX/XX (например: 33/12.5/15)', reply_markup=types.ReplyKeyboardRemove())
+        bot.reply_to(message,'Напишите мне размер дюймового колеса в формате XX/XX/XX (например: 33/12.5/15)'\
+                     , reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_inch)
     elif message.text.strip() == '🛒 Найти шины в магазине':
         #Создаем новую одноразовую клавиатуру для выбора сезона шин
@@ -213,14 +216,16 @@ def menu(message):
         markup.add(ms)
         markup.add(back)
         #Ответ
-        bot.reply_to(message, 'Сейчас я попытаюсь найти необходимые шины в магазине Мосавтошина. \n\nВыберите сезон', reply_markup=markup)
+        bot.reply_to(message, 'Сейчас я попытаюсь найти необходимые шины в магазине Мосавтошина. \n\nВыберите сезон'\
+                     , reply_markup=markup)
     elif message.text.strip() == '🛞 Подобрать диски':
         bot.register_next_step_handler(message, message_input_disk)
         bot.reply_to(message,
-                     'Напишите мне размер шины в формате XXX/XX/XX (например: 255/55/17), и я подберу для вас размер диска',
-                     reply_markup=types.ReplyKeyboardRemove())
+                     'Напишите мне размер шины в формате XXX/XX/XX (например: 255/55/17), и я подберу для вас '
+                     'размер диска', reply_markup=types.ReplyKeyboardRemove())
     else:
-        bot.reply_to(message,'Сначала выберите функцию c помощью кнопки ниже. \n\nЕсли кнопки не отображаются, нажмите /start')
+        bot.reply_to(message,'Сначала выберите функцию c помощью кнопки ниже. \n\nЕсли кнопки не отображаются, '
+                             'нажмите /start')
 
 
 @bot.message_handler(content_types=['text'])
@@ -232,7 +237,8 @@ def message_input_external_diameter(message):
     back = types.KeyboardButton("⬅️ Назад")
     markup.add(back)
     if (height_calc(message.text)) != False:
-        bot.reply_to(message, f"Внешний диаметр вашего колеса: " + str(height_calc(message.text)) + "мм" + "\nВ дюймах: " + str(height_calc_inch(message.text)) + '"', reply_markup = markup)
+        bot.reply_to(message, f'Внешний диаметр вашего колеса: {height_calc(message.text)}мм \nВ дюймах: '
+                              f'{height_calc_inch(message.text)}"', reply_markup = markup)
         bot.register_next_step_handler(message, start2)
     else:
         bot.reply_to(message, error_mes, reply_markup = markup)
@@ -248,7 +254,8 @@ def message_input_inch(message):
     back = types.KeyboardButton("⬅️ Назад")
     markup.add(back)
     if (info_check_inch(inch)) != False:
-        bot.reply_to(message, f"Ваше колесо примерно соответствует европейскому размеру " + str(amer_calc(inch)), reply_markup = markup)
+        bot.reply_to(message, f'Ваше колесо примерно соответствует европейскому размеру {amer_calc(inch)}'\
+                     , reply_markup = markup)
         bot.register_next_step_handler(message, start2)
     else:
         bot.reply_to(message, error_inch, reply_markup = markup)
@@ -268,16 +275,19 @@ def message_input_season(message):
     if message.text.strip() == '☀️ Лето':
         seas = 1
         bot.reply_to(message,
-                     'Напишите мне нужный размер в формате XXX/XX/XX (например: 255/55/17)\n\nПока я могу выводить только 10 позиций.', reply_markup=types.ReplyKeyboardRemove())
+                     'Напишите мне нужный размер в формате XXX/XX/XX (например: 255/55/17)'
+                     '\n\nПока я могу выводить только 10 позиций.', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_search)
     elif message.text.strip() == '❄️ Зима':
         seas = 2
-        bot.reply_to(message,'Напишите мне нужный размер в формате XXX/XX/XX (например: 255/55/17)\n\nПока я могу выводить только 10 позиций.', reply_markup=types.ReplyKeyboardRemove())
+        bot.reply_to(message,'Напишите мне нужный размер в формате XXX/XX/XX (например: 255/55/17)'
+                             '\n\nПока я могу выводить только 10 позиций.', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_search)
     elif message.text.strip() == '🌦 Всесезонка':
         seas = 3
         bot.reply_to(message,
-                     'Напишите мне нужный размер в формате XXX/XX/XX (например: 255/55/17)\n\nПока я могу выводить только 10 позиций.', reply_markup=types.ReplyKeyboardRemove())
+                     'Напишите мне нужный размер в формате XXX/XX/XX (например: 255/55/17)'
+                     '\n\nПока я могу выводить только 10 позиций.', reply_markup=types.ReplyKeyboardRemove())
         bot.register_next_step_handler(message, message_input_search)
     elif message.text.strip() == '⬅️ Назад':
         start2(message)
@@ -339,7 +349,7 @@ def message_input_disk(message):
     markup.add(back)
     if info_check(tyre) == True:
         if disk_size(tyre) != "error":
-            bot.reply_to(message, 'Рекомендуемый размер диска:' + ' ' + disk_size(tyre), reply_markup=markup)
+            bot.reply_to(message, f'Рекомендуемый размер диска: {disk_size(tyre)}', reply_markup=markup)
             bot.register_next_step_handler(message, start2)
         else:
             bot.reply_to(message, error_mes, reply_markup=markup)
@@ -358,7 +368,8 @@ def message_input_compare_step1(message):
     back = types.KeyboardButton("⬅️ Назад")
     markup.add(back)
     if info_check(old_item) == True:
-        bot.reply_to(message,'Напишите мне размер колес, с которыми вы хотите сравнить в формате XXX/XX/XX (например: 255/55/17)')  # Bot reply 'Введите текст'
+        bot.reply_to(message,'Напишите мне размер колес, с которыми вы хотите сравнить в формате XXX/XX/XX '
+                             '(например: 255/55/17)')
         bot.register_next_step_handler(message, message_input_compare_step2)
     else:
         bot.reply_to(message, error_mes, reply_markup=markup)
@@ -375,13 +386,15 @@ def message_input_compare_step2(message):
     markup.add(back)
     if compare(old_item, new_item) != "error":
         if compare(old_item, new_item) > 0: #Если новый размер оказался больше старого
-            answer = "Разница во внешнем диаметре составит " + str(compare(old_item, new_item)) + "мм \nКлиренс машины станет выше на "\
-                     + str(compare(old_item, new_item)/2) + "мм" + "\nПоказания спидометра будут меньше реальных на " \
-                     + str(speed(old_item, new_item)) + "%"
+            answer = f'Разница во внешнем диаметре составит {compare(old_item, new_item)}мм ' \
+                     f'\nКлиренс машины станет выше на '\
+                     f'{compare(old_item, new_item)/2}мм\nПоказания спидометра будут меньше реальных на '\
+                     f'{speed(old_item, new_item)}%'
         elif compare(old_item, new_item) < 0: #Если старый размер оказался больше нового
-            answer = "Разница во внешнем диаметре составит " + str(compare(old_item, new_item)) + "мм \nКлиренс машины станет ниже на " \
-                     + str(abs(compare(old_item, new_item) / 2)) + "мм" + "\nПоказания спидометра будут больше реальных на " \
-                     + str(abs(speed(old_item, new_item))) + "%"
+            answer = f'Разница во внешнем диаметре составит {compare(old_item, new_item)}мм ' \
+                     f'\nКлиренс машины станет ниже на '\
+                     f'{abs(compare(old_item, new_item))/2}мм\nПоказания спидометра будут больше реальных на '\
+                     f'{abs(speed(old_item, new_item))}%'
         else: #Если пользователь ввел два одинаковых размера
             answer = "Размер не изменится"
         bot.reply_to(message, answer, reply_markup = markup)
